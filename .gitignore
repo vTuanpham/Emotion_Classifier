@@ -1,0 +1,12 @@
+**/__pycache__
+wandb/
+
+src/data/*
+!src/data/fer_2013
+src/data/fer_2013/*
+!src/data/fer_2013/*.txt
+
+!src/data/dataloader.py
+
+src/checkpoints/*
+!src/checkpoints/*.txt
