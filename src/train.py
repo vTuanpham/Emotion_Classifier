@@ -53,7 +53,7 @@ def main(args):
         "train_transform": transforms.Compose([
             transforms.ToTensor(),
             transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomRotation(30),
+            transforms.RandomRotation(15),
             transforms.RandomAdjustSharpness(sharpness_factor=1.5, p=0.5),
             transforms.Normalize((0.507395516207,), (0.255128989415,))
         ]),

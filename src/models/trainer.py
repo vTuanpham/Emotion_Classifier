@@ -37,6 +37,9 @@ class Trainer:
         self.learning_rate = learning_rate
         self.dropout = dropout
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        # Since the Negative log likelyhood require the input
+        # to be log probabilities rather than raw probabilities NLLLoss is chosen
         self.criterion = nn.NLLLoss()
         set_seed(self.seed)
 
@@ -55,13 +58,15 @@ class Trainer:
         def lambda_function(epoch):
             # Define your custom learning rate schedule
             if epoch % 3 != 0:
-                return 1.0  # Update every 3 epochs
+                return 1.0
             else:
-                return 0.5  # After the 10th epoch, reduce the learning rate by half
+                return 0.5  # After the 3 epochs, reduce the learning rate by half
 
+        # Define the optimizer and the learning rate scheduler
         optimizer = torch.optim.Adam(model.parameters(), lr=self.learning_rate)
         scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda_function)
 
+        # Set valid loss to be inf so the first epoch loss would be saved
         valid_loss_min = np.Inf
         train_losses, test_losses = [], []
         for e in tqdm(range(self.num_train_epochs), colour='green', position=0, leave=False):
@@ -69,10 +74,13 @@ class Trainer:
             running_loss = 0
             tr_accuracy = 0
             for images, labels in tqdm(self.dataloaders['train'], colour='blue', position=1, leave=True):
+                # Send the images and labels to cuda(GPU memory) to process
                 images = images.to(self.device)
                 labels = labels.long().to(self.device)
-                optimizer.zero_grad()
 
+                # Forward pass
+                # Reset to zero using optimizer.zero_grad() to avoid accumulating gradients from previous iterations.
+                optimizer.zero_grad()
                 log_ps = model(images)
                 loss = self.criterion(log_ps, labels)
                 loss.backward()
@@ -90,6 +98,7 @@ class Trainer:
 
             test_loss, accuracy = self.eval(model)
 
+            # Compute average loss over the entire epoch
             train_losses.append(running_loss / len(self.dataloaders['train']))
             test_losses.append(test_loss / len(self.dataloaders['eval']))
 

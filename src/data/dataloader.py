@@ -34,7 +34,7 @@ class EmotionDataset(Dataset):
             image = self.transform(image)
 
         if label is None:
-            warnings.warn("\n Test dataset does not have label!")
+            label = 8
 
         return image, label
 
