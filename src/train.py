@@ -16,16 +16,18 @@ def parse_args(args):
                         help="The output directory to save")
     parser.add_argument('--data_path', type=str, default="./src/data/fer_2013",
                         help="The path to eval dir")
-    parser.add_argument('--train_batch_size', type=int, default=50, help="Batch size for the dataloader")
-    parser.add_argument('--val_batch_size', type=int, default=10, help="Eval batch size for the dataloader")
+    parser.add_argument('--train_batch_size', type=int, default=300, help="Batch size for the dataloader")
+    parser.add_argument('--val_batch_size', type=int, default=100, help="Eval batch size for the dataloader")
     parser.add_argument('--train_size', type=float, default=0.8,
                         help="The size of the training data")
     parser.add_argument('--num_worker', type=int, default=2, help="Number of worker for dataloader")
-    parser.add_argument('--seed', type=int, default=42, help="A seed for reproducible training.")
+    parser.add_argument('--seed', type=int, default=43, help="A seed for reproducible training.")
 
     # Training
-    parser.add_argument('--num_train_epochs', type=int, default=10,
+    parser.add_argument('--num_train_epochs', type=int, default=20,
                         help="number training epochs")
+    parser.add_argument('--dropout', type=float, default=0.3,
+                        help="Dropout arg for classifier (prevent Overfitting)")
 
     # Optimizer
     parser.add_argument('--learning_rate', type=float, default=1e-3,
@@ -50,8 +52,9 @@ def main(args):
         "val_batch_size": args.val_batch_size,
         "train_transform": transforms.Compose([
             transforms.ToTensor(),
-            transforms.RandomHorizontalFlip(),
+            transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomRotation(30),
+            transforms.RandomAdjustSharpness(sharpness_factor=1.5, p=0.5),
             transforms.Normalize((0.507395516207,), (0.255128989415,))
         ]),
         "val_transform": transforms.Compose([
@@ -73,6 +76,7 @@ def main(args):
         "train_batch_size": args.train_batch_size,
         "val_batch_size": args.val_batch_size,
         "learning_rate": args.learning_rate,
+        "dropout": args.dropout,
         "config": args
     }
     trainer = Trainer(**trainer_args)

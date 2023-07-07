@@ -1,4 +1,5 @@
 python src/train.py --output_dir "" \
+                    --data_path ""  \
                     --train_batch_size 1000 \
                     --val_batch_size 500  \
                     --train_size 0.8 \
@@ -6,3 +7,4 @@ python src/train.py --output_dir "" \
                     --seed 42 \
                     --num_train_epochs 100 \
                     --learning_rate 1e-3 \
+                    --dropout 0.1

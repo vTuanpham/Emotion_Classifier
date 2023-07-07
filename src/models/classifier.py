@@ -3,7 +3,7 @@ import torch
 
 
 class EmotionClassifier(nn.Module):
-    def __init__(self):
+    def __init__(self, dropout: float=0.3):
         super(EmotionClassifier, self).__init__()
         self.cnn1 = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3)
         self.cnn2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3)
@@ -24,8 +24,10 @@ class EmotionClassifier(nn.Module):
         self.cnn7_bn = nn.BatchNorm2d(256)
         self.fc1 = nn.Linear(1024, 512)
         self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, 7)
-        self.dropout = nn.Dropout(0.3)
+        self.fc3 = nn.Linear(256, 128)
+        self.fc4 = nn.Linear(128, 64)
+        self.fc5 = nn.Linear(64, 7)
+        self.dropout = nn.Dropout(dropout)
         self.log_softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, x):
@@ -37,11 +39,13 @@ class EmotionClassifier(nn.Module):
         x = self.relu(self.pool2(self.cnn6_bn(self.dropout(self.cnn6(x)))))
         x = self.relu(self.pool2(self.cnn7_bn(self.dropout(self.cnn7(x)))))
 
-        x = x.view(x.size(0), -1)
+        x = x.view(x.size(0), -1)  # Flatten for fully connected layer
 
         x = self.relu(self.dropout(self.fc1(x)))
         x = self.relu(self.dropout(self.fc2(x)))
-        x = self.log_softmax(self.fc3(x))
+        x = self.relu(self.dropout(self.fc3(x)))
+        x = self.relu(self.dropout(self.fc4(x)))
+        x = self.log_softmax(self.fc5(x))
         return x
 
     def count_parameters(self):
