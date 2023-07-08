@@ -1,6 +1,7 @@
 import os
 import cv2
 import sys
+import csv
 
 import numpy as np
 
@@ -20,10 +21,12 @@ class EmotionPredictor:
     def __init__(self,
                  face_dectect_cpkt_path: str="./src/checkpoints/haarcascade_frontalface_default.xml",
                  emotion_classifier_path: str="./src/checkpoints/best_model.pt",
-                 live_cam: bool=False
+                 live_cam: bool=False,
+                 interactive: bool=True,
                  ):
         self.face_dectect_cpkt_path = face_dectect_cpkt_path
         self.emotion_classifier_path = emotion_classifier_path
+        self.interactive = interactive
         self.live_cam = live_cam
 
     def load_emotion_classifier(self):
@@ -69,7 +72,7 @@ class EmotionPredictor:
             cap.release()
             cv2.destroyAllWindows()
 
-        else:
+        elif self.interactive:
             model = self.load_emotion_classifier()
             val_transform = transforms.Compose([
                 transforms.ToTensor(),
@@ -105,9 +108,34 @@ class EmotionPredictor:
 
             plt.close()
 
+        else:
+            model = self.load_emotion_classifier()
+            val_transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.507395516207,), (0.255128989415,))
+            ])
+            dataloaders = EmotionDataloader(r"./src/data/fer_2013",
+                                            val_transform=val_transform,
+                                            num_worker=1, val_batch_size=1)
+            dataloaders = dataloaders.__call__()
+            preds = []
+            # Note: In the test dataloader, there's no label hence the _ variable
+            for i, (face, _) in enumerate(iter(dataloaders['test'])):
+                with torch.no_grad():
+                    model.eval()
+                    log_ps = model.cpu()(face)
+                    ps = torch.exp(log_ps)
+                    top_p, top_class = ps.topk(1, dim=1)
+                    preds.append(int(top_class.numpy()))
+
+            print("\n Writing predictions to csv...")
+            with open("submission.csv", 'w', newline='') as f:
+                wr = csv.writer(f, quoting=csv.QUOTE_ALL)
+                wr.writerows([[pred] for pred in preds])
+
 
 if __name__ == "__main__":
-    predictor = EmotionPredictor(live_cam=False)
+    predictor = EmotionPredictor(live_cam=False, interactive=True)
     predictor.inference()
 
 
