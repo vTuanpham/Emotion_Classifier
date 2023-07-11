@@ -6,3 +6,4 @@ numpy>=1.17.5
 tqdm
 matplotlib
 opencv-python
+pandas

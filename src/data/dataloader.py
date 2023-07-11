@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 import torch
-from torchvision import datasets, transforms
+from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset, RandomSampler, SequentialSampler, random_split
 
 
