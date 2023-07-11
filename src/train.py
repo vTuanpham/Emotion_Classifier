@@ -14,7 +14,7 @@ def parse_args(args):
     # Data
     parser.add_argument('--output_dir', type=str, default="./src/checkpoints",
                         help="The output directory to save")
-    parser.add_argument('--data_path', type=str, default="./src/data/fer_2013",
+    parser.add_argument('--data_path', type=str, default="./src/data/fer_2013/fer2013/fer2013.csv",
                         help="The path to eval dir")
     parser.add_argument('--train_batch_size', type=int, default=300, help="Batch size for the dataloader")
     parser.add_argument('--val_batch_size', type=int, default=100, help="Eval batch size for the dataloader")
@@ -37,7 +37,7 @@ def parse_args(args):
 
     # Sanity check
     assert os.path.isdir(args.output_dir), "Invalid output dir path!"
-    assert os.path.isdir(args.data_path), "Invalid content dir path!"
+    assert os.path.isfile(args.data_path), "Invalid content file path!"
 
     return args
 

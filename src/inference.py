@@ -23,10 +23,12 @@ class EmotionPredictor:
                  emotion_classifier_path: str="./src/checkpoints/best_model.pt",
                  live_cam: bool=False,
                  interactive: bool=True,
+                 predict_csv: bool=False,
                  ):
         self.face_dectect_cpkt_path = face_dectect_cpkt_path
         self.emotion_classifier_path = emotion_classifier_path
         self.interactive = interactive
+        self.predict_csv = predict_csv
         self.live_cam = live_cam
 
     def load_emotion_classifier(self):
@@ -78,7 +80,7 @@ class EmotionPredictor:
                 transforms.ToTensor(),
                 transforms.Normalize((0.507395516207,), (0.255128989415,))
             ])
-            dataloaders = EmotionDataloader(r"./src/data/fer_2013",
+            dataloaders = EmotionDataloader(r"./src/data/fer_2013/fer2013/fer2013.csv",
                                             val_transform=val_transform,
                                             num_worker=1, val_batch_size=1)
             dataloaders = dataloaders.__call__()
@@ -108,13 +110,13 @@ class EmotionPredictor:
 
             plt.close()
 
-        else:
+        elif self.predict_csv:
             model = self.load_emotion_classifier()
             val_transform = transforms.Compose([
                 transforms.ToTensor(),
                 transforms.Normalize((0.507395516207,), (0.255128989415,))
             ])
-            dataloaders = EmotionDataloader(r"./src/data/fer_2013",
+            dataloaders = EmotionDataloader(r"./src/data/fer_2013/fer2013/fer2013.csv",
                                             val_transform=val_transform,
                                             num_worker=1, val_batch_size=1)
             dataloaders = dataloaders.__call__()
@@ -133,9 +135,33 @@ class EmotionPredictor:
                 wr = csv.writer(f, quoting=csv.QUOTE_ALL)
                 wr.writerows([[pred] for pred in preds])
 
+        else:
+            model = self.load_emotion_classifier()
+            val_transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.507395516207,), (0.255128989415,))
+            ])
+            dataloaders = EmotionDataloader(r"./src/data/fer_2013/fer2013/fer2013.csv",
+                                            val_transform=val_transform,
+                                            num_worker=2, val_batch_size=10)
+            dataloaders = dataloaders.__call__()
+            accuracy = 0
+            for i, (faces, labels) in enumerate(iter(dataloaders['test'])):
+                with torch.no_grad():
+                    model.eval()
+                    log_ps = model.cpu()(faces)
+
+                    ps = torch.exp(log_ps)
+                    top_p, top_class = ps.topk(1, dim=1)
+                    equals = top_class == labels.view(*top_class.shape)
+                    accuracy += torch.mean(equals.type(torch.FloatTensor))
+
+            print(accuracy)
+            return accuracy
+
 
 if __name__ == "__main__":
-    predictor = EmotionPredictor(live_cam=False, interactive=True)
+    predictor = EmotionPredictor(live_cam=False, interactive=False)
     predictor.inference()
 
 

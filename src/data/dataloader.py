@@ -4,6 +4,7 @@ import warnings
 sys.path.insert(0, r'./')
 import numpy as np
 from typing import Literal
+import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image
 
@@ -21,14 +22,37 @@ class EmotionDataset(Dataset):
                  data_path:str=None,
                  split: Literal['train', 'test']='train',
                  transform=None):
-        self.dataset = datasets.FER2013(root=data_path, split=split)
+        super(EmotionDataset, self).__init__()
+        data = pd.read_csv(data_path)
+        self.dataset_csv = {"train": data[data['Usage']=='Training'],
+                        "test": data[data['Usage']=='PublicTest']}
+        self.dataset = self.prepare_data(self.dataset_csv[split])
         self.transform = transform
 
+    @staticmethod
+    def prepare_data(data):
+        """ Prepare data for modeling
+            input: data frame with labels und pixel data
+            output: image and label array """
+
+        image_array = np.zeros(shape=(len(data), 48, 48))
+        image_label = np.array(list(map(int, data['emotion'])))
+
+        for i, row in enumerate(data.index):
+            image = np.fromstring(data.loc[row, 'pixels'], dtype=int, sep=' ')
+            # the fromstring() function is used to create a new 1D (one-dimensional)
+            # array from a string that contains data.
+            image = np.reshape(image, (48, 48))
+            image_array[i] = image
+
+        return {"img_arr": image_array, "label": image_label}
+
     def __len__(self):
-        return len(self.dataset)
+        return len(self.dataset['img_arr'])
 
     def __getitem__(self, idx):
-        image, label = self.dataset[idx]
+        image = Image.fromarray(self.dataset["img_arr"][idx])
+        label = self.dataset["label"][idx]
 
         if self.transform:
             image = self.transform(image)
@@ -73,7 +97,7 @@ class EmotionDataloader:
               f"\n Seed: {self.seed}"
               f"\n Number of training examples: {len(train_dataset)}"
               f"\n Number of evaluating examples: {len(eval_dataset)}"
-              f"\n Number of test examples: {len(test_dataset.dataset)}\n")
+              f"\n Number of test examples: {len(test_dataset)}\n")
 
         return {"train": self.get_dataloader(train_dataset, shuffle_flag=True, batch_size=self.train_batch_size),
                 "eval": self.get_dataloader(eval_dataset, shuffle_flag=False, batch_size=self.val_batch_size),
