@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import torch
 import torchvision.transforms as transforms
 from sklearn.metrics import confusion_matrix, precision_score, f1_score
+from sklearn.metrics import classification_report
 
 from src.models.classifier import EmotionClassifier
 from src.data.dataloader import EmotionDataloader, EMOTIONS
@@ -160,7 +161,9 @@ class EmotionPredictor:
                     true_labels.extend(labels.cpu().numpy())
                     predicted_labels.extend(predicted.cpu().numpy())
 
-                # Calculate accuracy
+            print(classification_report(true_labels, predicted_labels))
+
+            # Calculate accuracy
             accuracy = (torch.tensor(predicted_labels) == torch.tensor(true_labels)).sum().item() / len(true_labels)
             print("Accuracy:", accuracy)
 
@@ -201,7 +204,7 @@ class EmotionPredictor:
 
 
 if __name__ == "__main__":
-    predictor = EmotionPredictor(live_cam=False, interactive=False)
+    predictor = EmotionPredictor(live_cam=True, interactive=True)
     predictor.inference()
 
 
