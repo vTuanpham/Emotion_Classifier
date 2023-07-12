@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 
 import torch
 import torchvision.transforms as transforms
+from sklearn.metrics import confusion_matrix, precision_score, f1_score
 
 from src.models.classifier import EmotionClassifier
 from src.data.dataloader import EmotionDataloader, EMOTIONS
@@ -86,8 +87,7 @@ class EmotionPredictor:
             dataloaders = dataloaders.__call__()
             fig, axs = plt.subplots(1, 1)  # Create a figure with 3 subplots
 
-            # Note: In the test dataloader, there's no label hence the _ variable
-            for i, (face, _) in enumerate(iter(dataloaders['test'])):
+            for i, (face, label) in enumerate(iter(dataloaders['test'])):
                 with torch.no_grad():
                     model.eval()
                     log_ps = model.cpu()(face)
@@ -100,7 +100,8 @@ class EmotionPredictor:
 
                 # Display the image with the label on the corresponding subplot
                 axs.imshow(face_np)
-                axs.set_title(f"Emotion predict: {pred}")
+                axs.set_title(f"Emotion predict: {pred} "
+                              f"\nActual predict: {label} ")
 
                 plt.draw()
                 plt.pause(0.001)
@@ -121,7 +122,6 @@ class EmotionPredictor:
                                             num_worker=1, val_batch_size=1)
             dataloaders = dataloaders.__call__()
             preds = []
-            # Note: In the test dataloader, there's no label hence the _ variable
             for i, (face, _) in enumerate(iter(dataloaders['test'])):
                 with torch.no_grad():
                     model.eval()
@@ -143,21 +143,61 @@ class EmotionPredictor:
             ])
             dataloaders = EmotionDataloader(r"./src/data/fer_2013/fer2013/fer2013.csv",
                                             val_transform=val_transform,
-                                            num_worker=2, val_batch_size=10)
+                                            num_worker=2, val_batch_size=20)
             dataloaders = dataloaders.__call__()
             accuracy = 0
+            true_labels = []
+            predicted_labels = []
             for i, (faces, labels) in enumerate(iter(dataloaders['test'])):
                 with torch.no_grad():
-                    model.eval()
-                    log_ps = model.cpu()(faces)
-
+                    # Forward pass
+                    log_ps = model(faces)
                     ps = torch.exp(log_ps)
-                    top_p, top_class = ps.topk(1, dim=1)
-                    equals = top_class == labels.view(*top_class.shape)
-                    accuracy += torch.mean(equals.type(torch.FloatTensor))
 
-            print(accuracy)
-            return accuracy
+                    # Get predicted labels
+                    _, predicted = torch.max(ps, 1)
+
+                    true_labels.extend(labels.cpu().numpy())
+                    predicted_labels.extend(predicted.cpu().numpy())
+
+                # Calculate accuracy
+            accuracy = (torch.tensor(predicted_labels) == torch.tensor(true_labels)).sum().item() / len(true_labels)
+            print("Accuracy:", accuracy)
+
+            # Calculate precision
+            precision = precision_score(true_labels, predicted_labels, average='macro')
+            print("Precision:", precision)
+
+            # Calculate F1 score
+            f1 = f1_score(true_labels, predicted_labels, average='macro')
+            print("F1 Score:", f1)
+
+            # Calculate confusion matrix
+            confusion_mat = confusion_matrix(true_labels, predicted_labels)
+            print("Confusion Matrix:")
+            print(confusion_mat)
+
+            # Plot confusion matrix
+            class_names = [emote for emote in EMOTIONS.values()]  # Replace with your actual class names
+            fig, ax = plt.subplots()
+            im = ax.imshow(confusion_mat, interpolation='nearest', cmap=plt.cm.Blues)
+            ax.figure.colorbar(im, ax=ax)
+            ax.set(xticks=np.arange(confusion_mat.shape[1]),
+                   yticks=np.arange(confusion_mat.shape[0]),
+                   xticklabels=class_names, yticklabels=class_names,
+                   xlabel='Predicted label', ylabel='True label',
+                   title='Confusion Matrix')
+            plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+            fmt = '.2f' if confusion_mat.dtype == 'float' else 'd'
+            thresh = confusion_mat.max() / 2.
+            for i in range(confusion_mat.shape[0]):
+                for j in range(confusion_mat.shape[1]):
+                    ax.text(j, i, format(confusion_mat[i, j], fmt),
+                            ha="center", va="center",
+                            color="white" if confusion_mat[i, j] > thresh else "black")
+            plt.show()
+
+            return accuracy, precision, f1, confusion_mat
 
 
 if __name__ == "__main__":

@@ -16,21 +16,21 @@ def parse_args(args):
                         help="The output directory to save")
     parser.add_argument('--data_path', type=str, default="./src/data/fer_2013/fer2013/fer2013.csv",
                         help="The path to eval dir")
-    parser.add_argument('--train_batch_size', type=int, default=300, help="Batch size for the dataloader")
-    parser.add_argument('--val_batch_size', type=int, default=100, help="Eval batch size for the dataloader")
+    parser.add_argument('--train_batch_size', type=int, default=100, help="Batch size for the dataloader")
+    parser.add_argument('--val_batch_size', type=int, default=300, help="Eval batch size for the dataloader")
     parser.add_argument('--train_size', type=float, default=0.8,
                         help="The size of the training data")
     parser.add_argument('--num_worker', type=int, default=2, help="Number of worker for dataloader")
-    parser.add_argument('--seed', type=int, default=43, help="A seed for reproducible training.")
+    parser.add_argument('--seed', type=int, default=44, help="A seed for reproducible training.")
 
     # Training
     parser.add_argument('--num_train_epochs', type=int, default=20,
                         help="number training epochs")
-    parser.add_argument('--dropout', type=float, default=0.3,
+    parser.add_argument('--dropout', type=float, default=0.2,
                         help="Dropout arg for classifier (prevent Overfitting)")
 
     # Optimizer
-    parser.add_argument('--learning_rate', type=float, default=1e-3,
+    parser.add_argument('--learning_rate', type=float, default=1e-4,
                         help="Initial learning rate (after the potential warmup period) to use.")
 
     args = parser.parse_args(args)
@@ -52,10 +52,10 @@ def main(args):
         "val_batch_size": args.val_batch_size,
         "train_transform": transforms.Compose([
             transforms.ToTensor(),
+            transforms.Normalize((0.507395516207,), (0.255128989415,)),
             transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomRotation(15),
-            transforms.RandomAdjustSharpness(sharpness_factor=1.5, p=0.5),
-            transforms.Normalize((0.507395516207,), (0.255128989415,))
+            transforms.RandomPerspective(p=0.5, distortion_scale=0.3, fill=0.5),
+            transforms.RandomRotation(20)
         ]),
         "val_transform": transforms.Compose([
             transforms.ToTensor(),

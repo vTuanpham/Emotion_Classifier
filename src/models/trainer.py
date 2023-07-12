@@ -55,16 +55,9 @@ class Trainer:
             print(f" {key}: {value}")
         print("\n")
 
-        def lambda_function(epoch):
-            # Define your custom learning rate schedule
-            if epoch % 3 != 0:
-                return 1.0
-            else:
-                return 0.5  # After the 3 epochs, reduce the learning rate by half
-
         # Define the optimizer and the learning rate scheduler
-        optimizer = torch.optim.Adam(model.parameters(), lr=self.learning_rate)
-        scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda_function)
+        optimizer = torch.optim.Adam(model.parameters(), lr=self.learning_rate, betas=(0.85, 0.95))
+        scheduler = lr_scheduler.LinearLR(optimizer)
 
         # Set valid loss to be inf so the first epoch loss would be saved
         valid_loss_min = np.Inf
