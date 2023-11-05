@@ -54,7 +54,6 @@ def main(args):
             transforms.ToTensor(),
             transforms.Normalize((0.507395516207,), (0.255128989415,)),
             transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomCrop(size=(40, 40)),
             transforms.RandomPerspective(p=5, distortion_scale=0.3, fill=0.5),
             transforms.RandomAdjustSharpness(sharpness_factor=2),
             transforms.RandomAutocontrast(),
