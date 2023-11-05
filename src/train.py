@@ -70,7 +70,6 @@ def main(args):
         "train_size": args.train_size,
         "seed": args.seed,
         "num_worker": args.num_worker,
-        "num_features": args.num_features
     }
     dataloaders = EmotionDataloader(**dataloader_args)
 
@@ -86,6 +85,7 @@ def main(args):
         "dropout": args.dropout,
         "config": args,
         "optim_name": args.optim_name,
+        "num_features": args.num_features
     }
     trainer = Trainer(**trainer_args)
     trainer.train()
