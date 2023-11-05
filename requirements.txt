@@ -1,0 +1,7 @@
+Pillow>=9.0.0
+numpy>=1.17.5
+tqdm
+matplotlib
+opencv-python
+pandas
+scikit-learn
