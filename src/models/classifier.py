@@ -10,7 +10,7 @@ class EmotionClassifier(nn.Module):
         self.relu1 = nn.ReLU()
         self.bn1 = nn.BatchNorm2d(num_features)
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.dropout1 = nn.Dropout2d(0.5)
+        self.dropout1 = nn.Dropout2d(dropout)
 
         self.conv2 = nn.Conv2d(num_features, 2 * num_features, kernel_size=3, padding=1)
         self.relu2 = nn.ReLU()
@@ -19,7 +19,7 @@ class EmotionClassifier(nn.Module):
         self.relu3 = nn.ReLU()
         self.bn3 = nn.BatchNorm2d(2 * num_features)
         self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.dropout2 = nn.Dropout2d(0.5)
+        self.dropout2 = nn.Dropout2d(dropout)
 
         self.conv4 = nn.Conv2d(2 * num_features, 4 * num_features, kernel_size=3, padding=1)
         self.relu4 = nn.ReLU()
@@ -28,7 +28,7 @@ class EmotionClassifier(nn.Module):
         self.relu5 = nn.ReLU()
         self.bn5 = nn.BatchNorm2d(4 * num_features)
         self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.dropout3 = nn.Dropout2d(0.5)
+        self.dropout3 = nn.Dropout2d(dropout)
 
         self.conv6 = nn.Conv2d(4 * num_features, 8 * num_features, kernel_size=3, padding=1)
         self.relu6 = nn.ReLU()
@@ -37,19 +37,19 @@ class EmotionClassifier(nn.Module):
         self.relu7 = nn.ReLU()
         self.bn7 = nn.BatchNorm2d(8 * num_features)
         self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.dropout4 = nn.Dropout2d(0.5)
+        self.dropout4 = nn.Dropout2d(dropout)
 
         self.flatten = nn.Flatten()
 
         self.fc1 = nn.Linear(8 * num_features * (width // 16) * (height // 16), 8 * num_features)
         self.relu8 = nn.ReLU()
-        self.dropout5 = nn.Dropout(0.4)
+        self.dropout5 = nn.Dropout(0.2)
         self.fc2 = nn.Linear(8 * num_features, 4 * num_features)
         self.relu9 = nn.ReLU()
-        self.dropout6 = nn.Dropout(0.4)
+        self.dropout6 = nn.Dropout(0.2)
         self.fc3 = nn.Linear(4 * num_features, 2 * num_features)
         self.relu10 = nn.ReLU()
-        self.dropout7 = nn.Dropout(0.5)
+        self.dropout7 = nn.Dropout(0.1)
         self.fc4 = nn.Linear(2 * num_features, num_labels)
         self.softmax = nn.LogSoftmax(dim=1)
 

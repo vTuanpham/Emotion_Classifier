@@ -34,6 +34,7 @@ class Trainer:
                  dropout: float=0.3,
                  visualize_learning_curve: bool = True,
                  optim_name: str = "AdamW",
+                 num_features: int=64,
                  ):
         self.dataloaders = dataloaders.__call__()
         self.output_dir = output_dir
@@ -46,6 +47,7 @@ class Trainer:
         self.learning_rate = learning_rate
         self.optim_name = optim_name
         self.dropout = dropout
+        self.num_features = num_features
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         # Since the Negative log likelyhood require the input
@@ -54,7 +56,7 @@ class Trainer:
         set_seed(self.seed)
 
     def build_model(self):
-        emotion_classifier = EmotionClassifier(dropout=self.dropout)
+        emotion_classifier = EmotionClassifier(dropout=self.dropout, num_features=self.num_features)
         return emotion_classifier.to(self.device)
 
     def train(self):
