@@ -60,7 +60,6 @@ def main(args):
             transforms.RandomAdjustSharpness(sharpness_factor=2),
             transforms.RandomAutocontrast(),
             transforms.ColorJitter(brightness=.5, contrast=.5),
-            transforms.RandomAffine(degrees=(30, 70), translate=(0.1, 0.3), scale=(0.5, 0.75)),
             transforms.RandomRotation(20),
         ]),
         "val_transform": transforms.Compose([
