@@ -1,7 +1,6 @@
 import os
 import torch
 import numpy as np
-from tqdm.auto import tqdm
 from argparse import Namespace
 import matplotlib.pyplot as plt
 
@@ -10,7 +9,16 @@ import torch.optim.lr_scheduler as lr_scheduler
 
 from src.data.dataloader import EmotionDataloader
 from src.models.classifier import EmotionClassifier
-from src.utils.utils import set_seed
+from src.utils.utils import set_seed, in_notebook
+
+
+if in_notebook():
+    try:
+        from tqdm import tqdm_notebook as tqdm
+    except ImportError as e:
+        from tqdm.auto import tqdm
+else:
+    from tqdm.auto import tqdm
 
 
 class Trainer:
@@ -98,15 +106,15 @@ class Trainer:
             train_losses.append(running_loss / len(self.dataloaders['train']))
             test_losses.append(test_loss / len(self.dataloaders['eval']))
 
-            print("Epoch: {}/{} ".format(e + 1, self.num_train_epochs),
-                  "Training Loss: {:.3f} ".format(train_losses[-1]),
-                  "Training Acc: {:.3f} ".format(tr_accuracy / len(self.dataloaders['train'])),
-                  "Val Loss: {:.3f} ".format(test_losses[-1]),
-                  "Val Acc: {:.3f}".format(accuracy / len(self.dataloaders['eval'])))
+            tqdm.write("Epoch: {}/{} ".format(e + 1, self.num_train_epochs),
+                       "Training Loss: {:.3f} ".format(train_losses[-1]),
+                       "Training Acc: {:.3f} ".format(tr_accuracy / len(self.dataloaders['train'])),
+                       "Val Loss: {:.3f} ".format(test_losses[-1]),
+                       "Val Acc: {:.3f}".format(accuracy / len(self.dataloaders['eval'])))
             if test_loss / len(self.dataloaders['eval']) <= valid_loss_min:
-                print('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(
-                    valid_loss_min,
-                        test_loss / len(self.dataloaders['eval'])))
+                tqdm.write('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(
+                           valid_loss_min,
+                           test_loss / len(self.dataloaders['eval'])))
                 self.save(model)
                 valid_loss_min = test_loss / len(self.dataloaders['eval'])
 

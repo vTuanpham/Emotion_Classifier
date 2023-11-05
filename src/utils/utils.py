@@ -16,3 +16,13 @@ def set_seed(value):
 def clear_cuda_cache():
     print("\n Clearing cuda cache...")
     torch.cuda.empty_cache()
+
+
+def in_notebook():
+    """
+    Returns ``True`` if the module is running in IPython kernel,
+    ``False`` if in IPython shell or other Python shell.
+    """
+    return 'ipykernel' in sys.modules
+
+

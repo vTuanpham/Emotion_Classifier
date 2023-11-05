@@ -102,7 +102,7 @@ class EmotionPredictor:
                 # Display the image with the label on the corresponding subplot
                 axs.imshow(face_np)
                 axs.set_title(f"Emotion predict: {pred} "
-                              f"\nActual predict: {label} ")
+                              f"\nActual predict: {EMOTIONS[int(label.numpy())]} ")
 
                 plt.draw()
                 plt.pause(0.001)
@@ -199,12 +199,13 @@ class EmotionPredictor:
                             ha="center", va="center",
                             color="white" if confusion_mat[i, j] > thresh else "black")
             plt.show()
+            fig.savefig("Confusion_matrix.png", bbox_inches='tight')
 
             return accuracy, precision, f1, confusion_mat
 
 
 if __name__ == "__main__":
-    predictor = EmotionPredictor(live_cam=True, interactive=True)
+    predictor = EmotionPredictor(live_cam=False, interactive=False)
     predictor.inference()
 
 
