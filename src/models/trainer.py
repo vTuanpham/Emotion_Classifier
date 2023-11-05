@@ -106,15 +106,13 @@ class Trainer:
             train_losses.append(running_loss / len(self.dataloaders['train']))
             test_losses.append(test_loss / len(self.dataloaders['eval']))
 
-            tqdm.write("Epoch: {}/{} ".format(e + 1, self.num_train_epochs),
-                       "Training Loss: {:.3f} ".format(train_losses[-1]),
-                       "Training Acc: {:.3f} ".format(tr_accuracy / len(self.dataloaders['train'])),
-                       "Val Loss: {:.3f} ".format(test_losses[-1]),
-                       "Val Acc: {:.3f}".format(accuracy / len(self.dataloaders['eval'])))
+            tqdm.write(f"Epoch: {e + 1}/{self.num_train_epochs}" \
+                       f"Training Loss: {train_losses[-1]} " \
+                       f"Training Acc: {tr_accuracy / len(self.dataloaders['train'])} " \
+                       f"Val Loss: {test_losses[-1]} " \
+                       f"Val Acc: {accuracy / len(self.dataloaders['eval'])}")
             if test_loss / len(self.dataloaders['eval']) <= valid_loss_min:
-                tqdm.write('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(
-                           valid_loss_min,
-                           test_loss / len(self.dataloaders['eval'])))
+                tqdm.write(f'Validation loss decreased ({valid_loss_min} --> {test_loss / len(self.dataloaders["eval"])}).  Saving model ...')
                 self.save(model)
                 valid_loss_min = test_loss / len(self.dataloaders['eval'])
 
