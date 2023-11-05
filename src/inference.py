@@ -205,7 +205,9 @@ class EmotionPredictor:
 
 
 if __name__ == "__main__":
-    predictor = EmotionPredictor(live_cam=False, interactive=False)
+    predictor = EmotionPredictor(live_cam=False,
+                                 interactive=False,
+                                 predict_csv=False)
     predictor.inference()
 
 
